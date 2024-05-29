@@ -1,6 +1,6 @@
 import { useReducer } from 'react'
 import './App.css'
-import { PostsSwitchCase } from './posts-switch-case'
+import { Posts } from './posts'
 
 function App() {
   const [isToggle, toggle] = useReducer(isToggle => !isToggle, false)
@@ -13,7 +13,7 @@ function App() {
       <h1>useReducer</h1>
       <hr />
       <br />
-      <PostsSwitchCase />
+      <Posts />
     </>
   )
 }

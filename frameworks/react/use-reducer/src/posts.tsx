@@ -1,10 +1,12 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { mapCreatePost, f, maybe } from './shared/lib'
 import { PostCard } from './post-card'
-import { usePosts } from './entities/post/model/using-switch-case'
+import { usePostsSwitchCase, usePostsFunctional } from './entities/post/model'
 import type { Post } from './entities/post/model'
 
-export function PostsSwitchCase() {
-  const { posts, postDispatch } = usePosts()
+export function Posts() {
+  // const { posts, postDispatch } = usePostsSwitchCase()
+  const { posts, postDispatch } = usePostsFunctional()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
@@ -15,7 +17,7 @@ export function PostsSwitchCase() {
       content: maybe(formData.get('content')?.toString()),
     }
 
-    postDispatch({ type: 'ADD_POST', post: mapCreatePost(post) })
+    postDispatch({ type: 'addPost', payload: mapCreatePost(post) })
   }
 
   return (

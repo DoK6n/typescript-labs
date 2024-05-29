@@ -1,4 +1,4 @@
-import type { Post } from './shared/model'
+import type { Post } from './entities/post/model'
 
 interface PostCardProps {
   post: Post

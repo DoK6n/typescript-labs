@@ -3,13 +3,13 @@ import { uuid } from '../../../shared/lib'
 import type { Post } from './types'
 
 type Action =
-  | { type: 'ADD_POST'; post: Omit<Post, 'id'> }
-  | { type: 'DELETE_POST'; id: string }
-  | { type: 'EDIT_POST'; post: Post }
+  | { type: 'addPost'; payload: Omit<Post, 'id'> }
+  | { type: 'deletePost'; payload: { id: string } }
+  | { type: 'editPost'; payload: Post }
 
 const initialPosts: Post[] = [
   {
-    id: '1',
+    id: uuid(),
     author: 'John Doe',
     title: 'First Post',
     content: 'This is the first post',
@@ -18,18 +18,18 @@ const initialPosts: Post[] = [
 
 const postsReducer = (state: Post[], action: Action) => {
   switch (action.type) {
-    case 'ADD_POST':
-      return [...state, { ...action.post, id: uuid() }]
-    case 'DELETE_POST':
-      return state.filter(post => post.id !== action.id)
-    case 'EDIT_POST':
-      return state.map(post => (post.id === action.post.id ? action.post : post))
+    case 'addPost':
+      return [...state, { ...action.payload, id: uuid() }]
+    case 'deletePost':
+      return state.filter(post => post.id !== action.payload.id)
+    case 'editPost':
+      return state.map(post => (post.id === action.payload.id ? action.payload : post))
     default:
       throw new Error('Invalid action type')
   }
 }
 
-export const usePosts = () => {
+export const usePostsSwitchCase = () => {
   const [posts, postDispatch] = useReducer(postsReducer, initialPosts)
 
   return { posts, postDispatch }
