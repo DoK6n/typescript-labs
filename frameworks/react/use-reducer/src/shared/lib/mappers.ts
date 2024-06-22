@@ -1,4 +1,4 @@
-import type { Post } from '../model'
+import type { Post } from '../../entities/post/model'
 
 export const mapCreatePost = (post: Omit<Post, 'id'>) => {
   return {
