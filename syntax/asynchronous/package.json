@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
-    "error-handling": "ts-node error-handling.ts"
+    "error-handling": "ts-node error-handling.ts",
+    "promise": "ts-node promise.ts",
+    "promise-no-new": "ts-node promise-no-new.ts"
   },
   "keywords": [],
   "author": "",
