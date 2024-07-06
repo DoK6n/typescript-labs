@@ -1,0 +1,14 @@
+{
+  "name": "asynchronous",
+  "version": "1.0.0",
+  "description": "",
+  "scripts": {
+    "error-handling": "ts-node error-handling.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "ts-node": "^10.9.2"
+  }
+}
