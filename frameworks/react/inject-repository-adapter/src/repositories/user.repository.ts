@@ -1,5 +1,4 @@
-import { KyResponse } from 'ky'
-import { ApiAdapter } from '../adapters/api.adapter.type'
+import { KyApiAdapter } from '../adapters/api.adapter'
 
 export interface UserRequestDto {
   name: string
@@ -36,7 +35,7 @@ export interface UserResponseDto {
   support: UserSupport
 }
 
-export const createUserRepository = (httpClient: ApiAdapter<KyResponse>) => ({
+export const createUserRepository = (httpClient: KyApiAdapter) => ({
   getAllUsers: async () => {
     const response = await httpClient.get('users')
     return response.json<UsersResponseDto>()

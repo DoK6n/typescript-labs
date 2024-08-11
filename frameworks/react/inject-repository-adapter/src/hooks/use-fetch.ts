@@ -5,8 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
   캐시가 설정되기도 전에 거의 동시에 렌더링 될 경우 캐시가 적용되지 않는 이슈가 있음
 */
 
-// eslint-disable-next-line prefer-const
-let fetchCache = new Map()
+const fetchCache = new Map()
 
 export function useFetch<ResponseDto>(
   fetcher: () => Promise<ResponseDto>,

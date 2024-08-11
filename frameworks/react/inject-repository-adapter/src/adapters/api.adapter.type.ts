@@ -1,5 +1,5 @@
-export interface ApiAdapter<ResponseType> {
-  get: (url: string) => Promise<ResponseType>
+export interface ApiAdapter<ResponseType, Options = Record<string, unknown>> {
+  get: (url: string, options?: Options) => Promise<ResponseType>
   post: (
     url: string,
     {
@@ -7,6 +7,7 @@ export interface ApiAdapter<ResponseType> {
     }: {
       data: unknown
     },
+    options?: Options,
   ) => Promise<ResponseType>
   patch: (
     url: string,
@@ -15,6 +16,7 @@ export interface ApiAdapter<ResponseType> {
     }: {
       data: unknown
     },
+    options?: Options,
   ) => Promise<ResponseType>
   put: (
     url: string,
@@ -23,6 +25,7 @@ export interface ApiAdapter<ResponseType> {
     }: {
       data: unknown
     },
+    options?: Options,
   ) => Promise<ResponseType>
-  delete: (url: string) => Promise<ResponseType>
+  delete: (url: string, options?: Options) => Promise<ResponseType>
 }
