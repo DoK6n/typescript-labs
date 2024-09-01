@@ -1,5 +1,5 @@
 import * as readline from 'readline'
-import { UserProps } from './with-custom-errors/user/user.entity'
+import { UserInput } from '.'
 
 // 사용자 ID 입력 받기
 export const createRl = () =>
@@ -17,9 +17,9 @@ export const createRlAction = (rl: readline.Interface) => ({
     })
   },
 
-  inputCreateUser: (prompt: string): Promise<UserProps> => {
+  inputCreateUser: (prompt: string): Promise<UserInput> => {
     return new Promise(resolve => {
-      const userInfo: UserProps = { id: '', name: '', email: '' }
+      const userInfo: UserInput = { id: '', name: '', email: '' }
 
       const askId = () => {
         rl.question('id: ', id => {

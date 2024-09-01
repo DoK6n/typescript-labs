@@ -1,6 +1,18 @@
 import { Result } from './result'
 import * as readline from 'readline'
 
+const ERROR_MESSAGES = {
+  USER_ID_REQUIRED: '사용자 ID가 필요합니다.',
+  USER_ID_STRING: '사용자 ID는 문자열이어야 합니다.',
+  USER_NAME_LENGTH: '이름은 2-50자 사이여야 합니다.',
+  USER_EMAIL_VALID: '유효한 이메일 주소가 필요합니다.',
+  USER_NOT_FOUND: '사용자를 찾을 수 없습니다.',
+  DATABASE_ERROR: '데이터베이스 오류: ',
+  UNKNOWN_ERROR: '알 수 없는 오류가 발생했습니다.',
+  USER_ID_EXISTS: '이미 존재하는 사용자 ID입니다.',
+  USER_SAVE_FAILED: '사용자를 저장할 수 없습니다.',
+}
+
 // 타입 정의
 type UserData = {
   id: string
@@ -10,20 +22,20 @@ type UserData = {
   lastLogin: Date
 }
 
-type UserProps = Omit<UserData, 'createdAt' | 'lastLogin'>
+export type UserInput = Omit<UserData, 'createdAt' | 'lastLogin'>
 
 class User {
-  private constructor(private props: UserProps) {}
+  private constructor(private props: UserInput) {}
 
-  static create(props: UserProps): Result<User> {
+  static create(props: UserInput): Result<User> {
     if (!props.id) {
-      return Result.fail<User>('사용자 ID가 필요합니다.')
+      return Result.fail<User>(ERROR_MESSAGES.USER_ID_REQUIRED)
     } else if (typeof props.id !== 'string') {
-      return Result.fail<User>('사용자 ID는 문자열이어야 합니다.')
+      return Result.fail<User>(ERROR_MESSAGES.USER_ID_STRING)
     } else if (!props.name || props.name.length < 2 || props.name.length > 50) {
-      return Result.fail<User>('이름은 2-50자 사이여야 합니다.')
+      return Result.fail<User>(ERROR_MESSAGES.USER_NAME_LENGTH)
     } else if (!props.email || !props.email.includes('@')) {
-      return Result.fail<User>('유효한 이메일 주소가 필요합니다.')
+      return Result.fail<User>(ERROR_MESSAGES.USER_EMAIL_VALID)
     }
 
     return Result.ok<User>(new User(props))
@@ -39,7 +51,7 @@ class User {
     return this.props.email
   }
 
-  toJSON(): UserProps {
+  toJSON(): UserInput {
     return { ...this.props }
   }
 
@@ -56,12 +68,12 @@ class InMemoryDatabase {
     return this.users.get(id) || null
   }
 
-  async save(user: UserProps): Promise<string> {
+  async save(user: UserInput): Promise<string> {
     try {
       if (this.users.has(user.id)) {
-        throw new Error('이미 존재하는 사용자 ID입니다.')
+        throw new Error(ERROR_MESSAGES.USER_ID_EXISTS)
       } else if (typeof user.id !== 'string') {
-        throw new Error('사용자 ID는 문자열이어야 합니다.')
+        throw new Error(ERROR_MESSAGES.USER_ID_STRING)
       }
 
       const createdAt = new Date()
@@ -72,15 +84,15 @@ class InMemoryDatabase {
       const savedUser = this.users.get(user.id)
 
       if (!savedUser) {
-        throw new Error('사용자를 저장할 수 없습니다.')
+        throw new Error(ERROR_MESSAGES.USER_SAVE_FAILED)
       }
 
       return savedUser.id
     } catch (error) {
       if (error instanceof Error) {
-        throw new Error('데이터베이스 오류: ' + error.message)
+        throw new Error(ERROR_MESSAGES.DATABASE_ERROR + error.message)
       }
-      throw new Error('알 수 없는 오류가 발생했습니다.')
+      throw new Error(ERROR_MESSAGES.UNKNOWN_ERROR)
     }
   }
 
@@ -103,26 +115,26 @@ class UserRepository {
     try {
       const userData = await this.database.users.findOne(id)
       if (!userData) {
-        return Result.fail<UserData>('사용자를 찾을 수 없습니다.')
+        return Result.fail<UserData>(ERROR_MESSAGES.USER_NOT_FOUND)
       }
       return Result.ok<UserData>(userData)
     } catch (error: unknown) {
       if (error instanceof Error) {
-        return Result.fail<UserData>('데이터베이스 오류: ' + error.message)
+        return Result.fail<UserData>(ERROR_MESSAGES.DATABASE_ERROR + error.message)
       }
-      return Result.fail<UserData>('알 수 없는 오류가 발생했습니다.')
+      return Result.fail<UserData>(ERROR_MESSAGES.UNKNOWN_ERROR)
     }
   }
 
-  async save(user: UserProps): Promise<Result<string>> {
+  async save(user: User): Promise<Result<string>> {
     try {
-      const id = await this.database.users.save(user)
+      const id = await this.database.users.save(user.toJSON())
       return Result.ok<string>(id)
     } catch (error) {
       if (error instanceof Error) {
-        return Result.fail<string>(error.message)
+        return Result.fail<string>(ERROR_MESSAGES.DATABASE_ERROR + error.message)
       }
-      return Result.fail<string>('알 수 없는 오류가 발생했습니다.')
+      return Result.fail<string>(ERROR_MESSAGES.UNKNOWN_ERROR)
     }
   }
 }
@@ -140,14 +152,14 @@ class UserService {
     return Result.ok<UserData>(result.value)
   }
 
-  async save(user: UserProps): Promise<Result<string>> {
+  async save(user: UserInput): Promise<Result<string>> {
     const newUser = User.create(user)
 
     if (newUser.isFailure) {
       return Result.fail<string>(newUser.error!)
     }
 
-    const result = await this.userRepository.save(newUser.value.toJSON())
+    const result = await this.userRepository.save(newUser.value)
 
     if (result.isFailure) {
       return Result.fail<string>(result.error!)
@@ -175,7 +187,7 @@ class UserController {
     const id = req.params?.id
 
     if (!id) {
-      return res.status(400).json({ error: '사용자 ID가 필요합니다.' })
+      return res.status(400).json({ error: ERROR_MESSAGES.USER_ID_REQUIRED })
     }
 
     const result = await this.userService.getUserDetails(id)
@@ -185,11 +197,11 @@ class UserController {
     res.json(result.value)
   }
 
-  async saveUser(req: Request<UserProps>, res: Response) {
+  async saveUser(req: Request<UserInput>, res: Response) {
     const body = req.body
 
     if (!body) {
-      return res.status(400).json({ error: '사용자 정보가 필요합니다.' })
+      return res.status(400).json({ error: ERROR_MESSAGES.USER_ID_REQUIRED })
     }
 
     const result = await this.userService.save(body)
@@ -235,9 +247,9 @@ async function main() {
     })
   }
 
-  const inputCreateUser = (prompt: string): Promise<UserProps> => {
+  const inputCreateUser = (prompt: string): Promise<UserInput> => {
     return new Promise(resolve => {
-      const userInfo: UserProps = { id: '', name: '', email: '' }
+      const userInfo: UserInput = { id: '', name: '', email: '' }
 
       const askId = () => {
         rl.question('id: ', id => {
