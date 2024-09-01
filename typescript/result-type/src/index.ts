@@ -2,27 +2,30 @@ import { Result } from './result'
 import * as readline from 'readline'
 
 // 타입 정의
-interface UserProps {
+type UserData = {
   id: string
   name: string
   email: string
-}
-
-interface UserDetails extends UserProps {
   createdAt: Date
   lastLogin: Date
 }
+
+type UserProps = Omit<UserData, 'createdAt' | 'lastLogin'>
 
 class User {
   private constructor(private props: UserProps) {}
 
   static create(props: UserProps): Result<User> {
-    if (!props.name || props.name.length < 2 || props.name.length > 50) {
+    if (!props.id) {
+      return Result.fail<User>('사용자 ID가 필요합니다.')
+    } else if (typeof props.id !== 'string') {
+      return Result.fail<User>('사용자 ID는 문자열이어야 합니다.')
+    } else if (!props.name || props.name.length < 2 || props.name.length > 50) {
       return Result.fail<User>('이름은 2-50자 사이여야 합니다.')
-    }
-    if (!props.email || !props.email.includes('@')) {
+    } else if (!props.email || !props.email.includes('@')) {
       return Result.fail<User>('유효한 이메일 주소가 필요합니다.')
     }
+
     return Result.ok<User>(new User(props))
   }
 
@@ -35,21 +38,53 @@ class User {
   get email(): string {
     return this.props.email
   }
+
+  toJSON(): UserProps {
+    return { ...this.props }
+  }
+
+  *[Symbol.iterator]() {
+    yield* Object.values(this.props)
+  }
 }
 
 // 간단한 인메모리 데이터베이스
 class InMemoryDatabase {
-  private users: Map<string, UserProps> = new Map()
+  private users: Map<string, UserData> = new Map()
 
-  async findOne(id: string): Promise<UserProps | null> {
+  async findOne(id: string): Promise<UserData | null> {
     return this.users.get(id) || null
   }
 
-  async save(user: UserProps): Promise<void> {
-    this.users.set(user.id, user)
+  async save(user: UserProps): Promise<string> {
+    try {
+      if (this.users.has(user.id)) {
+        throw new Error('이미 존재하는 사용자 ID입니다.')
+      } else if (typeof user.id !== 'string') {
+        throw new Error('사용자 ID는 문자열이어야 합니다.')
+      }
+
+      const createdAt = new Date()
+      const lastLogin = new Date()
+
+      this.users.set(user.id, { ...user, createdAt, lastLogin })
+
+      const savedUser = this.users.get(user.id)
+
+      if (!savedUser) {
+        throw new Error('사용자를 저장할 수 없습니다.')
+      }
+
+      return savedUser.id
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new Error('데이터베이스 오류: ' + error.message)
+      }
+      throw new Error('알 수 없는 오류가 발생했습니다.')
+    }
   }
 
-  async findAll(): Promise<UserProps[]> {
+  async findAll(): Promise<UserData[]> {
     return Array.from(this.users.values())
   }
 }
@@ -58,24 +93,36 @@ const database = {
   users: new InMemoryDatabase(),
 }
 
+type Database = typeof database
+
 // 레포지토리 레이어
 class UserRepository {
-  async findById(id: string): Promise<Result<User>> {
+  constructor(private database: Database) {}
+
+  async findById(id: string): Promise<Result<UserData>> {
     try {
-      const userData = await database.users.findOne(id)
+      const userData = await this.database.users.findOne(id)
       if (!userData) {
-        return Result.fail<User>('사용자를 찾을 수 없습니다.')
+        return Result.fail<UserData>('사용자를 찾을 수 없습니다.')
       }
-      const userResult = User.create(userData)
-      if (userResult.isFailure) {
-        return Result.fail<User>('유효하지 않은 사용자 데이터: ' + userResult.error)
-      }
-      return Result.ok<User>(userResult.value)
+      return Result.ok<UserData>(userData)
     } catch (error: unknown) {
       if (error instanceof Error) {
-        return Result.fail<User>('데이터베이스 오류: ' + error.message)
+        return Result.fail<UserData>('데이터베이스 오류: ' + error.message)
       }
-      return Result.fail<User>('알 수 없는 오류가 발생했습니다.')
+      return Result.fail<UserData>('알 수 없는 오류가 발생했습니다.')
+    }
+  }
+
+  async save(user: UserProps): Promise<Result<string>> {
+    try {
+      const id = await this.database.users.save(user)
+      return Result.ok<string>(id)
+    } catch (error) {
+      if (error instanceof Error) {
+        return Result.fail<string>(error.message)
+      }
+      return Result.fail<string>('알 수 없는 오류가 발생했습니다.')
     }
   }
 }
@@ -84,27 +131,36 @@ class UserRepository {
 class UserService {
   constructor(private userRepository: UserRepository) {}
 
-  async getUserDetails(id: string): Promise<Result<UserDetails>> {
-    const userResult = await this.userRepository.findById(id)
-    if (userResult.isFailure) {
-      return Result.fail<UserDetails>(userResult.error!)
+  async getUserDetails(id: string): Promise<Result<UserData>> {
+    const result = await this.userRepository.findById(id)
+    if (result.isFailure) {
+      return Result.fail<UserData>(result.error!)
     }
 
-    const user = userResult.value
-    const userDetails: UserDetails = {
-      id: user.id,
-      name: user.name,
-      email: user.email,
-      createdAt: new Date(), // 실제로는 DB에서 가져와야 함
-      lastLogin: new Date(), // 실제로는 DB에서 가져와야 함
+    return Result.ok<UserData>(result.value)
+  }
+
+  async save(user: UserProps): Promise<Result<string>> {
+    const newUser = User.create(user)
+
+    if (newUser.isFailure) {
+      return Result.fail<string>(newUser.error!)
     }
-    return Result.ok<UserDetails>(userDetails)
+
+    const result = await this.userRepository.save(newUser.value.toJSON())
+
+    if (result.isFailure) {
+      return Result.fail<string>(result.error!)
+    }
+
+    return Result.ok<string>(result.value)
   }
 }
 
 // 컨트롤러 레이어
-interface Request {
-  params: { id: string }
+interface Request<Body = any> {
+  params?: { id: string }
+  body?: Body
 }
 
 interface Response {
@@ -116,7 +172,27 @@ class UserController {
   constructor(private userService: UserService) {}
 
   async getUser(req: Request, res: Response) {
-    const result = await this.userService.getUserDetails(req.params.id)
+    const id = req.params?.id
+
+    if (!id) {
+      return res.status(400).json({ error: '사용자 ID가 필요합니다.' })
+    }
+
+    const result = await this.userService.getUserDetails(id)
+    if (result.isFailure) {
+      return res.status(400).json({ error: result.error })
+    }
+    res.json(result.value)
+  }
+
+  async saveUser(req: Request<UserProps>, res: Response) {
+    const body = req.body
+
+    if (!body) {
+      return res.status(400).json({ error: '사용자 정보가 필요합니다.' })
+    }
+
+    const result = await this.userService.save(body)
     if (result.isFailure) {
       return res.status(400).json({ error: result.error })
     }
@@ -126,15 +202,22 @@ class UserController {
 
 // 사용 예시
 async function main() {
-  const userRepo = new UserRepository()
-  const userService = new UserService(userRepo)
-  const userController = new UserController(userService)
-
   // 테스트 데이터 추가
-  await database.users.save({ id: '1', name: '홍길동', email: 'hong@example.com' })
-  await database.users.save({ id: '2', name: '김철수', email: 'kimexample.com' })
-  await database.users.save({ id: '3', name: '철', email: 'strongiron@example.com' })
+  const seed = [
+    { id: '0', name: '홍길동', email: 'hong@gmail.com' },
+    { id: '1', name: '김철수', email: 'iron@gmail.com' },
+    { id: '2', name: '오영택', email: 'wak@gmail.com' },
+  ]
+  await Promise.all(
+    seed.map(async user => {
+      const createdUser = User.create(user)
+      if (createdUser.isSuccess) {
+        await database.users.save(createdUser.value.toJSON())
+      }
+    }),
+  )
 
+  console.log('테스트 데이터 저장')
   console.log(await database.users.findAll())
   console.log()
 
@@ -152,26 +235,68 @@ async function main() {
     })
   }
 
-  try {
-    while (true) {
-      const userId = await getUserInput('사용자 ID를 입력하세요: ')
+  const inputCreateUser = (prompt: string): Promise<UserProps> => {
+    return new Promise(resolve => {
+      const userInfo: UserProps = { id: '', name: '', email: '' }
 
-      if (userId.toLowerCase() === 'q') {
+      const askId = () => {
+        rl.question('id: ', id => {
+          userInfo.id = id
+          askName()
+        })
+      }
+
+      const askName = () => {
+        rl.question('name: ', name => {
+          userInfo.name = name
+          askEmail()
+        })
+      }
+
+      const askEmail = () => {
+        rl.question('email: ', email => {
+          userInfo.email = email
+          resolve(userInfo)
+        })
+      }
+
+      console.log(prompt)
+      askId()
+    })
+  }
+
+  try {
+    const userController = new UserController(new UserService(new UserRepository(database)))
+
+    while (true) {
+      const action = await getUserInput(
+        '어떤 작업을 하시겠습니까? (1: 사용자 조회, 2: 새로운 사용자 저장, q: 종료): ',
+      )
+
+      if (action.toLowerCase() === 'q') {
         console.log('프로그램을 종료합니다.')
         break
       }
 
-      // 컨트롤러 테스트
-      const req: Request = { params: { id: userId } }
       const res: Response = {
         status: (code: number) => ({
-          json: (data: any) => console.log('Status:', code, 'Data:', data),
+          json: (data: any) => console.log('statusCode:', code, 'data:', data),
           status: (code: number) => res,
         }),
-        json: (data: any) => console.log('Response:', data),
+        json: (data: any) => console.log('\nresponse:', data),
       }
 
-      await userController.getUser(req, res)
+      if (action === '1') {
+        const userId = await getUserInput('조회할 사용자 ID를 입력하세요: ')
+        const req: Request = { params: { id: userId } }
+        await userController.getUser(req, res)
+      } else if (action === '2') {
+        const body = await inputCreateUser('저장할 사용자 정보를 입력하세요: ')
+        const req: Request = { body }
+        await userController.saveUser(req, res)
+      } else {
+        console.log('잘못된 입력입니다. 다시 시도해주세요.')
+      }
 
       console.log()
     }

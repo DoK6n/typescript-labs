@@ -6,6 +6,7 @@
   "scripts": {
     "build": "swc src --out-dir dist",
     "start": "pnpm build && ts-node ./dist/src/index.js",
+    "start:custom-error": "pnpm build && ts-node ./dist/src/with-custom-errors/user/main.js",
     "dev": "nodemon --watch"
   },
   "keywords": [],
