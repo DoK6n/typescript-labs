@@ -1,0 +1,29 @@
+{
+  "name": "@effect/typescript",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "build": "swc src --out-dir dist",
+    "start": "pnpm build && ts-node ./dist/src/index.js",
+    "start:rop": "pnpm build && ts-node ./dist/src/railway-oriented-programming/index.js",
+    "dev": "nodemon --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@swc-node/register": "^1.10.9",
+    "@swc/cli": "^0.4.0",
+    "@swc/core": "^1.7.22",
+    "@swc/helpers": "^0.5.12",
+    "@types/node": "^22.5.1",
+    "nodemon": "^3.1.4",
+    "regenerator-runtime": "^0.14.1",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.5.4"
+  },
+  "dependencies": {
+    "effect": "^3.7.0"
+  }
+}
