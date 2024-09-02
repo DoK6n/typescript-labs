@@ -1,0 +1,21 @@
+{
+  "name": "effect-on-backend",
+  "module": "src/main.ts",
+  "type": "module",
+  "scripts": {
+    "dev": "bun run src/main.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "dependencies": {
+    "@effect/platform": "^0.63.0",
+    "@effect/platform-node": "^0.58.0",
+    "effect": "^3.7.0",
+    "effect-http": "^0.78.0",
+    "effect-http-node": "^0.18.0"
+  }
+}
