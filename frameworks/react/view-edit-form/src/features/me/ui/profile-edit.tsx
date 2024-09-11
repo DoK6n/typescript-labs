@@ -1,8 +1,5 @@
-import { useSWRConfig } from 'swr'
-import { ProfileInput, useGetProfileQuery, useUpdateProfileMutation } from '../../../entities/api'
 import ProfileUI from './profile-ui'
-import { useEffect, useMemo, useState } from 'react'
-import { useRenderCount } from '../../../shared/lib'
+import { useProfileEdit } from '../lib'
 
 interface ProfileEditProps {
   onCancel: () => void
@@ -10,38 +7,10 @@ interface ProfileEditProps {
 }
 
 export default function ProfileEdit({ onCancel, onSave }: ProfileEditProps) {
-  const { mutate: globalMutate } = useSWRConfig()
-  const renderCount = useRenderCount()
-  const { profile } = useGetProfileQuery('1')
-  const { updateProfileTrigger } = useUpdateProfileMutation()
-  const [input, setInput] = useState<ProfileInput>(profile)
-  const actions = useMemo(
-    () => ({
-      setProfile: (profile: Partial<ProfileInput>) => {
-        setInput(prev => ({ ...prev, ...profile }))
-      },
-    }),
-    [],
-  )
-
-  useEffect(() => {
-    setInput(profile)
-  }, [profile])
-
-  const handleSave = (input: ProfileInput) => async () => {
-    await updateProfileTrigger(input, {
-      onSuccess: async () => {
-        await globalMutate(key => Array.isArray(key) && key[0] === `/profile`)
-        onSave()
-      },
-    })
-  }
+  const { input, actions, handleSave } = useProfileEdit(onSave)
 
   return (
     <>
-      <section>
-        <span>edit render count: {renderCount}</span>
-      </section>
       <section>
         <button onClick={onCancel}>취소</button>
         <button onClick={handleSave(input)}>저장</button>

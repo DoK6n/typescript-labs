@@ -1,6 +1,5 @@
 import ProfileUI from './profile-ui'
 import { useGetProfileQuery } from '../../../entities/api'
-import { useRenderCount } from '../../../shared/lib'
 
 interface ProfileViewProps {
   onEdit: () => void
@@ -8,13 +7,9 @@ interface ProfileViewProps {
 
 export default function ProfileView({ onEdit }: ProfileViewProps) {
   const { profile } = useGetProfileQuery('1')
-  const renderCount = useRenderCount()
 
   return (
     <>
-      <section>
-        <span>view render count: {renderCount}</span>
-      </section>
       <section>
         <button onClick={onEdit}>수정</button>
       </section>
