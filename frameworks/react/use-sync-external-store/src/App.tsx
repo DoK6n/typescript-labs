@@ -1,13 +1,19 @@
-import { store, useStore } from './store'
+import { useCountStore } from './store'
 
 function App() {
-  const count = useStore(store, state => state.count)
+  const count = useCountStore(s => s.count)
+  const name = useCountStore(s => s.name)
 
   return (
     <div>
       Count: {count}
-      <button onClick={() => store.setState(state => ({ count: state.count + 1 }))}>+</button>
-      <button onClick={() => store.setState(state => ({ count: state.count - 1 }))}>-</button>
+      Name: {name}
+      <button onClick={() => useCountStore.setState(state => ({ count: state.count + 1 }))}>
+        +
+      </button>
+      <button onClick={() => useCountStore.setState(state => ({ count: state.count - 1 }))}>
+        -
+      </button>
       <hr />
       <Child />
     </div>
@@ -15,7 +21,7 @@ function App() {
 }
 
 const Child = () => {
-  const count = useStore(store, state => state.count)
+  const count = useCountStore(state => state.count)
   return <div>Child: {count}</div>
 }
 
