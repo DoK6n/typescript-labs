@@ -58,17 +58,3 @@ export const create = <T>(createState: CreateState<T>) => {
 
   return useBoundStore as typeof useBoundStore & ReturnType<typeof createStore<T>>
 }
-
-// how to use
-
-interface CounterStore {
-  count: number
-  increment: () => void
-  squaredCount: () => number
-}
-
-export const useCounterStore = create<CounterStore>((set, get) => ({
-  count: 0,
-  increment: () => set(prev => ({ count: prev.count + 1 })),
-  squaredCount: () => get().count * get().count,
-}))
