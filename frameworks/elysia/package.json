@@ -1,0 +1,17 @@
+{
+  "name": "elysia",
+  "version": "1.0.50",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "bun run --watch src/main.ts"
+  },
+  "dependencies": {
+    "bcrypt": "^5.1.1",
+    "elysia": "latest"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "bun-types": "latest"
+  },
+  "module": "src/index.js"
+}
