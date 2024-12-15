@@ -1,8 +1,10 @@
 import { Elysia } from 'elysia'
 import { pgModule } from './database'
 import { pool } from './pg-client'
+import { UserController } from './users/user.controller'
 
 const app = new Elysia()
+  .use(UserController)
   .use(pgModule)
   .get('/', async ({ db }) => {
     try {
@@ -20,20 +22,21 @@ const app = new Elysia()
     try {
       const res = await db.query<{ now: Date }>('SELECT NOW()')
       const now = res.rows[0].now
+      const random = Math.floor(Math.random() * 9) + 1
 
-      console.log('GET /now ', now.toISOString())
+      const response = { now: now.toISOString(), random }
+      console.log('GET /now ', response)
 
-      return now.toISOString()
+      return response
     } finally {
       db.release()
     }
   })
   .listen(3000, ({ hostname, port }) => {
-    console.log(`🦊 Elysia is running at ${hostname}:${port}`)
+    console.log(`🦊 Elysia is running at http://${hostname}:${port}`)
   })
 
 process.on('SIGINT', async () => {
-  await app.stop()
   await pool.end()
   console.log('Server is stopping...')
   process.exit()

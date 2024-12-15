@@ -9,3 +9,7 @@ export const pgModule = new Elysia({ name: 'DB.pg' }) //
       db,
     }
   })
+  .onAfterHandle(({ db }) => {
+    console.log('onAfterHandle')
+    // db.release() // 커넥션 반환
+  })
