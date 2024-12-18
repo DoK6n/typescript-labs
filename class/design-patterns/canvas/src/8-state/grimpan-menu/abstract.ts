@@ -1,5 +1,6 @@
 import { Grimpan } from '../grimpan/abstract.js'
 import type { GrimpanMode } from '../grimpan/types'
+import { Command } from './command/abstract.js'
 import type { ButtonType } from './types'
 
 export abstract class GrimpanMenu {
@@ -10,7 +11,11 @@ export abstract class GrimpanMenu {
   setActiveButton(type: GrimpanMode) {
     document.querySelector('.active')?.classList.remove('active')
     document.querySelector(`#${type}-button`)?.classList.add('active')
-    this.grimpan.setMode(type)
+  }
+
+  // invoker이기 때문에 excute를 메서드로 따로 빼둠
+  executeCommand(command: Command) {
+    command.execute()
   }
 
   abstract initialize(types: ButtonType[]): void

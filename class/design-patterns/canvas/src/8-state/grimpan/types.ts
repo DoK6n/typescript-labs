@@ -1,4 +1,4 @@
-import { ButtonType } from '../grimpan-menu/types'
+import { ButtonType } from '../grimpan-menu/types.js'
 
 export type GrimpanMode = 'pen' | 'eraser' | 'pipette' | 'circle' | 'rectangle'
 

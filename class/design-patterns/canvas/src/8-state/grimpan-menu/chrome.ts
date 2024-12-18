@@ -3,16 +3,7 @@ import { GrimpanMenuButton } from '../grimpan-menu-button/button.js'
 import { GrimpanMenuInput } from '../grimpan-menu-button/input.js'
 import { ChromeGrimpan } from '../grimpan/chrome.js'
 import { GrimpanMenu } from './abstract.js'
-import { Command } from './command/abstract.js'
-import {
-  BackCommand,
-  ForwardCommand,
-  PenSelectCommand,
-  CircleSelectCommand,
-  EraserSelectCommand,
-  PipetteSelectCommand,
-  RectangleSelectCommand,
-} from './command/index.js'
+import { BackCommand, ForwardCommand, PenSelectCommand } from './command/index.js'
 import { ButtonType } from './types.js'
 
 // invoker : 명령을 실행하는 객체
@@ -21,12 +12,7 @@ export class ChromeGrimpanMenu extends GrimpanMenu {
 
   override initialize(types: ButtonType[]): void {
     types.forEach(this.drawButtonByType)
-    this.setActiveButton('pen')
-  }
-
-  // invoker이기 때문에 excute를 메서드로 따로 빼둠
-  executeCommand(command: Command) {
-    command.execute()
+    this.grimpan.setMode('pen')
   }
 
   @Bind
@@ -48,22 +34,22 @@ export class ChromeGrimpanMenu extends GrimpanMenu {
 
   @Bind
   onClickEraser() {
-    this.executeCommand(new EraserSelectCommand(this.grimpan)) // { name: 'eraser' };
+    this.grimpan.setMode('eraser')
   }
 
   @Bind
   onClickCircle() {
-    this.executeCommand(new CircleSelectCommand(this.grimpan)) // { name: 'eraser' };
+    this.grimpan.setMode('circle')
   }
 
   @Bind
   onClickRectangle() {
-    this.executeCommand(new RectangleSelectCommand(this.grimpan)) // { name: 'eraser' };
+    this.grimpan.setMode('rectangle')
   }
 
   @Bind
   onClickPipette() {
-    this.executeCommand(new PipetteSelectCommand(this.grimpan)) // { name: 'eraser' };
+    this.grimpan.setMode('pipette')
   }
 
   @Bind

@@ -1,14 +1,17 @@
-import { AbstractGrimpanFactory } from '../grimpan-factory'
-import { GrimpanHistory } from '../grimpan-history/abstract'
-import { GrimpanMenu } from '../grimpan-menu/abstract'
-import type { GrimpanMode, GrimpanOption } from './types'
+import { AbstractGrimpanFactory } from '../grimpan-factory.js'
+import { GrimpanHistory } from '../grimpan-history/abstract.js'
+import { GrimpanMenu } from '../grimpan-menu/abstract.js'
+import { Mode } from '../modes/abstract.js'
+import { CircleMode, EraserMode, PipetteMode, RectangleMode } from '../modes/index.js'
+import { PenMode } from '../modes/index.js'
+import type { GrimpanMode, GrimpanOption } from './types.js'
 
 export abstract class Grimpan {
   canvas: HTMLCanvasElement
   ctx: CanvasRenderingContext2D
   history!: GrimpanHistory
   menu!: GrimpanMenu
-  mode!: GrimpanMode
+  mode!: Mode
   color: string
   active: boolean
 
@@ -23,7 +26,27 @@ export abstract class Grimpan {
   }
 
   setMode(mode: GrimpanMode) {
-    this.mode = mode
+    console.log('mode change', mode)
+
+    switch (mode) {
+      case 'pen':
+        this.mode = new PenMode(this)
+        break
+      case 'eraser':
+        this.mode = new EraserMode(this)
+        break
+      case 'pipette':
+        this.mode = new PipetteMode(this)
+        break
+      case 'circle':
+        this.mode = new CircleMode(this)
+        break
+      case 'rectangle':
+        this.mode = new RectangleMode(this)
+        break
+      default:
+        throw new Error('Invalid mode')
+    }
   }
 
   setColor(color: string) {
