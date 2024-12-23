@@ -1,1 +1,1 @@
-import './8-state/index.js'
+import './9-strategy/index.js'
