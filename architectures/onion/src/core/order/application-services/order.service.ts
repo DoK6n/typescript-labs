@@ -1,9 +1,9 @@
-import { Order } from 'src/core/domain-model/order'
-import { IOrderService } from './order.service.interface'
-import { IOrderRepository } from 'src/core/domain-services/order.repository.interface'
-import { CreateOrderDto } from './dtos'
 import { Inject, Injectable } from '@nestjs/common'
-import { ORDER_REPOSITORY } from '~/core/domain-services/order.di-tokens'
+import { Order } from '~/core/order/domain-model/order'
+import { IOrderRepository } from '~/core/order/domain-services/order.repository.interface'
+import { ORDER_REPOSITORY } from '~/core/order/domain-services/order.di-tokens'
+import { IOrderService } from './order.service.interface'
+import { CreateOrderDto } from './dtos'
 
 @Injectable()
 export class OrderService implements IOrderService {

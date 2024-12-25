@@ -1,4 +1,4 @@
-import { OrderItem } from '~/core/domain-model/order-item'
+import { OrderItem } from '~/core/order/domain-model/order-item'
 import { OrderItemEntity } from './order-item.entity'
 import { IMapper } from '~/infrastructure/common/mapper.interface'
 import { Injectable } from '@nestjs/common'

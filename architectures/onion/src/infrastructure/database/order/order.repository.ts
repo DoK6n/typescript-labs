@@ -1,10 +1,10 @@
-import { IOrderRepository } from '~/core/domain-services/order.repository.interface'
-import { Order } from '~/core/domain-model/order'
+import { IOrderRepository } from '~/core/order/domain-services/order.repository.interface'
+import { Order } from '~/core/order/domain-model/order'
 import { OrderEntity } from './order.entity'
 import { OrderMapper } from './order.mapper'
 
 interface DatabaseClient {
-  save: (entity: OrderEntity) => OrderEntity['id']
+  save: (entity: OrderEntity) => OrderEntity['id'] | undefined
   findById: (id: string) => OrderEntity | undefined
 }
 

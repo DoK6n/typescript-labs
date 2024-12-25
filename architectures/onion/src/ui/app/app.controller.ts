@@ -8,25 +8,13 @@ export class AppController {
   constructor() {}
 
   @TypedRoute.Get()
-  getHello(): BaseResponse<IHelloResponse> {
-    return new BaseResponse({ data: typia.random<IHelloResponse>() })
+  getRandomData(): BaseResponse<RandomData> {
+    return new BaseResponse({ data: typia.random<RandomData>() })
   }
-
-  //   @TypedRoute.Get(':id')
-  //   async getHelloById(
-  //     @TypedParam('id')
-  //     id: number & tags.Minimum<0> & tags.Maximum<9> & tags.Type<'int32'>,
-  //   ): Promise<BaseResponse<IIdentifierRequest>> {
-  //     return new BaseResponse({ data: { id } })
-  //   }
 }
 
-export interface IHelloResponse {
+interface RandomData {
   code: number & tags.Minimum<0> & tags.Maximum<100> & tags.Type<'int32'>
   email: string & tags.Format<'email'>
   uuid: string & tags.Format<'uuid'>
-}
-
-export interface IIdentifierRequest {
-  id: number & tags.Minimum<0> & tags.Maximum<9> & tags.Type<'int32'>
 }

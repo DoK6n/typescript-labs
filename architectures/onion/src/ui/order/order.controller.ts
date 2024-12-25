@@ -1,10 +1,10 @@
 import { Controller, Inject } from '@nestjs/common'
 import { TypedBody, TypedRoute } from '@nestia/core'
-import { CreateOrderDto } from '~/core/application-services/order/dtos'
-import { IOrderService } from '~/core/application-services/order/order.service.interface'
+import { CreateOrderDto } from '~/core/order/application-services/dtos'
+import { IOrderService } from '~/core/order/application-services/order.service.interface'
+import { ORDER_SERVICE } from '~/core/order/domain-services/order.di-tokens'
+import { Order } from '~/core/order/domain-model/order'
 import { BaseResponse } from '../common/base-response'
-import { ORDER_SERVICE } from '~/core/domain-services/order.di-tokens'
-import { Order } from '~/core/domain-model/order'
 
 @Controller('orders')
 export class OrderController {

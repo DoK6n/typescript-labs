@@ -1,4 +1,4 @@
-import { OrderStatus } from '~/core/domain-model/order-status.constant'
+import { OrderStatus } from '~/core/order/domain-model/order-status.constant'
 
 export class OrderStatusEntity {
   id: string

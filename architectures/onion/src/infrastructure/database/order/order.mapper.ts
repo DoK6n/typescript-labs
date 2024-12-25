@@ -1,7 +1,7 @@
-import { Order } from '~/core/domain-model/order'
-import { OrderEntity } from './order.entity'
-import { OrderItemMapper } from '../order-item/order-item.mapper'
+import { Order } from '~/core/order/domain-model/order'
 import { IMapper } from '~/infrastructure/common/mapper.interface'
+import { OrderItemMapper } from '../order-item/order-item.mapper'
+import { OrderEntity } from './order.entity'
 import { Injectable } from '@nestjs/common'
 
 @Injectable()
