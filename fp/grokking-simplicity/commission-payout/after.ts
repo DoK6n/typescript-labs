@@ -58,3 +58,5 @@ main(testAffiliates)
 // 결과값:
 // Sending payout of $120 to bank code: BANK456
 // Sending payout of $105 to bank code: BANK101
+
+export {}
