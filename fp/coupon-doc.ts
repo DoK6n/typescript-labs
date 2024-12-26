@@ -5,9 +5,11 @@ const emailSystem = {
   },
 }
 
+const DEFAULT_PAGE_SIZE = 20
+
 // FromDB
-function fetchSubscribersFromDB(): Subscriber[] {
-  return [
+function fetchSubscribersFromDB(page: number): Subscriber[] {
+  const subscribers = [
     { email: 'john@coldmail.com', rec_count: 2 },
     { email: 'sam@pmail.co', rec_count: 16 },
     { email: 'linda1989@oal.com', rec_count: 1 },
@@ -15,6 +17,8 @@ function fetchSubscribersFromDB(): Subscriber[] {
     { email: 'mrbig@pmail.co', rec_count: 25 },
     { email: 'lol@lol.lol', rec_count: 0 },
   ]
+
+  return subscribers.slice(page * DEFAULT_PAGE_SIZE, (page + 1) * DEFAULT_PAGE_SIZE)
 }
 
 function fetchCouponsFromDB(): Coupon[] {
@@ -106,11 +110,16 @@ function sendIssue() {
   const coupons = fetchCouponsFromDB()
   const goodCoupons = selectCouponsByRank(coupons, 'good')
   const bestCoupons = selectCouponsByRank(coupons, 'best')
-  const subscribers = fetchSubscribersFromDB()
-  const emails = emailsForSubscribers(subscribers, goodCoupons, bestCoupons)
+  let page = 0
+  let subscribers = fetchSubscribersFromDB(page)
 
-  for (let e = 0; e < emails.length; e++) {
-    const email = emails[e]
-    emailSystem.send(email)
+  while (subscribers.length > 0) {
+    const emails = emailsForSubscribers(subscribers, goodCoupons, bestCoupons)
+    for (let e = 0; e < emails.length; e++) {
+      const email = emails[e]
+      emailSystem.send(email)
+    }
+    page++
+    subscribers = fetchSubscribersFromDB(page)
   }
 }
